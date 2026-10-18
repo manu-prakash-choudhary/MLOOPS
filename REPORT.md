@@ -4,10 +4,14 @@
 
 **Project report**
 
-**Student:** _Add your name and ID_  
+**Student:** Manu Prakash Choudhary  
+**Student ID:** 2025AF05107  
 **Course:** Machine Learning Operations (MLOps)  
 **Dataset:** UCI Heart Disease dataset  
 **Date:** 18 October 2026
+
+**GitHub repository:** [manu-prakash-choudhary/MLOOPS](https://github.com/manu-prakash-choudhary/MLOOPS)  
+**Successful CI run:** [ML pipeline CI — job 117717884591](https://github.com/manu-prakash-choudhary/MLOOPS/actions/runs/39141699329/job/117717884591?pr=1)
 
 > This project is an educational demonstration. The classifier is not a
 > medical device and must not be used to diagnose, treat, or make decisions
@@ -39,11 +43,10 @@ should not be read as a guarantee for a new hospital.
 
 The API uses FastAPI, validates feature inputs, returns a binary prediction
 and probability, logs request metadata without logging patient data, and
-exposes Prometheus metrics. Docker and Docker Compose were built and exercised
-locally. Kubernetes manifests and a GitHub Actions workflow are included.
-Actual Kubernetes deployment remains pending because Kubernetes is currently
-disabled in Docker Desktop; a GitHub-hosted workflow run also requires pushing
-the repository to GitHub.
+exposes Prometheus metrics. The Docker image and local Kubernetes deployment
+were exercised. Prometheus successfully scraped the API, and screenshots
+document the prediction, services, and monitoring. GitHub Actions completed
+the full CI workflow successfully.
 
 <div style="page-break-after: always;"></div>
 
@@ -262,12 +265,10 @@ tracked model training, executes tests, builds the Docker image, and performs
 health and prediction smoke requests against a running container. EDA and
 MLflow outputs are uploaded as workflow artifacts.
 
-The workflow has been validated locally by running its substantive steps:
-Ruff passed, five tests passed, MLflow created four runs with model/plot
-artifacts, and the Docker image built successfully. The workflow itself has
-not yet run on GitHub because a push to a GitHub repository is required.
-After publishing this work, inspect the Actions run and retain its run URL
-and screenshots for the final submission.
+The successful [GitHub Actions run](https://github.com/manu-prakash-choudhary/MLOOPS/actions/runs/39141699329/job/117717884591?pr=1)
+completed linting, dataset preparation and EDA, MLflow model training, tests,
+Docker image build, API smoke checks, and artifact upload. The run is linked
+on this report's cover page.
 
 The Dockerfile uses `python:3.14-slim`, installs the pinned API dependencies,
 copies only the API and final model, runs as a non-root user, and defines a
@@ -298,12 +299,13 @@ kubectl apply -f k8s/monitoring.yaml
 kubectl get pods,services
 ```
 
-At the time of this report, `kubectl` is installed but no cluster context is
-configured; Docker Desktop reports Kubernetes as disabled. Therefore the
-Kubernetes resources are provided but have not been deployed or screenshot
-verified. Local monitoring has been demonstrated through Docker Compose
-instead. This is a known remaining assignment action, not a claim of a
-completed cluster rollout.
+The local Kubernetes deployment was applied and verified. Both the API and
+Prometheus pods were running with 1/1 containers ready, and the Services were
+created. The API prediction and Prometheus scrape/query were also tested; see
+the screenshots in the evidence section below. The API Service's
+LoadBalancer external IP is `<pending>`, which is expected in this local
+cluster. Access is through local port-forwarding/NodePort rather than a public
+cloud endpoint.
 
 The API exposes:
 
@@ -318,12 +320,44 @@ can inspect container logs with `docker compose logs -f heart-api` or
 
 The Prometheus UI can query request rates by status and calculate a latency
 percentile. Example queries and local access instructions are in `README.md`.
-The local service test confirmed the scrape target was up and the API counter
-was visible after health checks.
+The screenshot evidence shows `up{job="heart-disease-api"}` returning `1` and
+the `heart_api_requests_total` metric populated after API requests.
 
 <div style="page-break-after: always;"></div>
 
-## 10. Reproduction, limitations, and completion checklist
+## 10. Deployment evidence
+
+The following screenshots document the local deployment and operational
+checks. The API prediction example returned HTTP 200, predicted class 1
+(`disease`), and probability 0.7561 at threshold 0.44. This is a model
+estimate, not a diagnosis.
+
+### Kubernetes pods and services
+
+![Kubernetes pods and services](screenshots/pods%20and%20services.png)
+
+### API prediction request
+
+![Prediction request in Swagger UI](screenshots/predict%201.png)
+
+### API prediction response
+
+![Prediction response in Swagger UI](screenshots/predict%201%20response.png)
+
+### Prometheus scrape target and request metrics
+
+![Prometheus query results](screenshots/prometheus%20query.png)
+
+### Docker container
+
+![Docker Desktop container](screenshots/docker%20screenshot.png)
+
+The successful CI run is available at
+[GitHub Actions](https://github.com/manu-prakash-choudhary/MLOOPS/actions/runs/39141699329/job/117717884591?pr=1).
+
+<div style="page-break-after: always;"></div>
+
+## 11. Reproduction, limitations, and completion checklist
 
 From the repository root, the principal workflow is:
 
@@ -350,15 +384,11 @@ the original 0–4 ordinal outcome and loses severity information. Threshold
 choice trades precision against recall and should be based on an explicitly
 defined application cost—not tuned for clinical use here.
 
-### Submission evidence still to collect
+### Remaining submission item
 
-- Push the repository and capture the successful GitHub Actions workflow page
-  and uploaded artifacts.
-- Enable Docker Desktop Kubernetes, apply the manifests, verify rollout and
-  endpoints, and capture deployment/service and Prometheus screenshots.
-- Record the required short video demonstrating data preparation, MLflow,
-  tests/CI, container startup, and API/monitoring behavior.
-- Add student name/ID, repository URL, and final evidence links to this report.
+- Record and submit the required short video demonstrating data preparation,
+  MLflow, the successful CI run, Kubernetes/API prediction, and Prometheus
+  monitoring.
 
 This project is intended to demonstrate a reproducible MLOps workflow for
 coursework. It is not clinically validated and must not be used to make
