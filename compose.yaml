@@ -1,0 +1,18 @@
+services:
+  heart-api:
+    image: heart-api:latest
+    build:
+      context: .
+    ports:
+      - "${API_PORT:-8000}:8000"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - heart-api
+    restart: unless-stopped

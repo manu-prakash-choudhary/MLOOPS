@@ -1,0 +1,68 @@
+name: ML pipeline CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-train-build:
+    runs-on: ubuntu-latest
+    env:
+      MLFLOW_DISABLE_AGENT_HINT: "1"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Prepare dataset and create EDA plots
+        run: |
+          python prepare_dataset.py
+          python run_eda.py
+
+      - name: Train models and log MLflow experiments
+        run: python track_experiments.py
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Build Docker image
+        run: docker build -t heart-api:ci .
+
+      - name: Smoke-test Docker API
+        run: |
+          docker run -d --name heart-api-ci -p 8000:8000 heart-api:ci
+          trap 'docker stop heart-api-ci >/dev/null 2>&1 || true' EXIT
+          curl --fail --silent --show-error --retry 30 --retry-delay 2 \
+            --retry-connrefused http://127.0.0.1:8000/health
+          curl --fail --silent --show-error \
+            -X POST http://127.0.0.1:8000/predict \
+            -H 'Content-Type: application/json' \
+            -d '{"age":62,"sex":"Female","cp":"asymptomatic","trestbps":140,"chol":268,"fbs":0,"restecg":"lv hypertrophy","thalch":160,"exang":0,"oldpeak":3.6,"slope":"downsloping","ca":2,"thal":"normal"}'
+
+      - name: Upload EDA and experiment tracking artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlops-run-artifacts
+          path: |
+            artifacts/eda/
+            mlflow.db
+            mlruns/
+            mlartifacts/
+          if-no-files-found: warn

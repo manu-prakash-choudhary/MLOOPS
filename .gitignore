@@ -1,0 +1,46 @@
+.DS_Store
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.coverage
+htmlcov/
+*.log
+*.egg-info/
+build/
+dist/
+
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+
+# Course materials
+*.pptx
+*.pdf
+!REPORT.pdf
+*.docx
+!REPORT.docx
+
+# Dataset files
+*.csv
+!heart-disease-data/
+!heart-disease-data/heart_disease_uci.csv
+!working-data/
+!working-data/heart_disease_clean.csv
+working-data/*.joblib
+!working-data/final_model_no_source.joblib
+
+# Local experiment tracking database and artifacts
+mlflow.db*
+*.sqlite
+*.sqlite3
+mlruns/
+mlartifacts/
+
+# Temporary exports
+*.tmp

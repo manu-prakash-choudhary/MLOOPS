@@ -1,0 +1,6 @@
+*
+!requirements.txt
+!app.py
+!working-data/
+working-data/*
+!working-data/final_model_no_source.joblib
