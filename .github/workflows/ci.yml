@@ -49,7 +49,8 @@ jobs:
           docker run -d --name heart-api-ci -p 8000:8000 heart-api:ci
           trap 'docker stop heart-api-ci >/dev/null 2>&1 || true' EXIT
           curl --fail --silent --show-error --retry 30 --retry-delay 2 \
-            --retry-connrefused http://127.0.0.1:8000/health
+            --retry-connrefused --retry-all-errors \
+            http://127.0.0.1:8000/health
           curl --fail --silent --show-error \
             -X POST http://127.0.0.1:8000/predict \
             -H 'Content-Type: application/json' \
