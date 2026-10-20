@@ -257,7 +257,25 @@ docker inspect --format='{{.State.Health.Status}}' <container-id>
 ```
 
 The image uses the pinned Python dependencies, runs as a non-root user, and
-includes a Docker health check.
+includes a Docker health check. It listens on the hosting platform's `PORT`
+environment variable and defaults to port `8000` for local use.
+
+### Publish a public demo with Render
+
+The repository includes `render.yaml` for a free Render web service. Push the
+project, including the model artifact, to GitHub, then:
+
+1. Sign in to Render and choose **New → Blueprint**.
+2. Connect the `MLOOPS` GitHub repository and select the branch to deploy.
+3. Review the Blueprint's `heart-disease-api` web service and deploy it.
+4. When deployment succeeds, open the service's **URL**. Check `/health`,
+   `/docs`, and submit a request to `/predict`.
+
+Render will build the repository's Dockerfile and redeploy on later commits.
+The free service may sleep when idle, so the first request after a quiet period
+can take longer. The service is publicly accessible; this educational demo has
+no authentication or rate limiting. Do not send real patient data, and do not
+use its output for diagnosis or treatment.
 
 ## Local Kubernetes deployment and monitoring
 
